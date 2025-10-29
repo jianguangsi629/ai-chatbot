@@ -196,7 +196,22 @@ function PureMultimodalInput({
   }, []);
 
   const _modelResolver = useMemo(() => {
-    return myProvider.languageModel(selectedModelId);
+    // Validate that the selected model exists in the provider
+    const availableModels = [
+      "chat-model",
+      "chat-model-reasoning",
+      "title-model",
+      "artifact-model",
+      "gemini-flash",
+      "gemini-pro",
+      "deepseek-chat",
+      "deepseek-coder",
+    ];
+    const validModelId = availableModels.includes(selectedModelId)
+      ? selectedModelId
+      : "chat-model";
+
+    return myProvider.languageModel(validModelId);
   }, [selectedModelId]);
 
   const contextProps = useMemo(
@@ -402,11 +417,21 @@ function PureModelSelectorCompact({
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
 }) {
-  const [optimisticModelId, setOptimisticModelId] = useState(selectedModelId);
+  // Validate that the selected model exists, fallback to default if not
+  const availableModelIds = chatModels.map((m) => m.id);
+  const validSelectedModelId = availableModelIds.includes(selectedModelId)
+    ? selectedModelId
+    : "chat-model";
+
+  const [optimisticModelId, setOptimisticModelId] =
+    useState(validSelectedModelId);
 
   useEffect(() => {
-    setOptimisticModelId(selectedModelId);
-  }, [selectedModelId]);
+    const validId = availableModelIds.includes(selectedModelId)
+      ? selectedModelId
+      : "chat-model";
+    setOptimisticModelId(validId);
+  }, [selectedModelId, availableModelIds]);
 
   const selectedModel = chatModels.find(
     (model) => model.id === optimisticModelId
